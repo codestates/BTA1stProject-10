@@ -62,12 +62,54 @@ router.post("/sendTransaction", async (req, res) => {
   //const { privateKey, fromAddress, toAddress, amount } = req.body;
   try {
 
-    const privateKey = Buffer.from('7d0c8ef98351641b54de0c0729019c4ab6d04478bb2288701d77bcc4342c42b6', 'hex');
+    //const privateKey = Buffer.from('7d0c8ef98351641b54de0c0729019c4ab6d04478bb2288701d77bcc4342c42b6', 'hex');
+    const privateKey = '7d0c8ef98351641b54de0c0729019c4ab6d04478bb2288701d77bcc4342c42b6';
 
     const account1 = '0x42cd61efEb226A4bc7Ac449CF9af5Bf85634e432';
 
     const account2 = '0xafc0eb1c10e32d9286321bde09592d7db8e8c6a1';
 
+    const nonce = await web3.eth.getTransactionCount(account1);
+    console.log(nonce);
+    const gasPrice = await web3.eth.getGasPrice();
+    console.log(gasPrice)
+  
+    const bal = await web3.eth.getBalance(account1);
+  
+    console.log(bal)
+  
+    const rawTx = {
+      from: account1,
+      to: account2,
+      value: Web3.utils.toHex(Web3.utils.toWei('1')),
+      //gasLimit: Web3.utils.toHex(210000),
+      gasPrice: web3.utils.toHex(web3.utils.toWei('0.00001')),
+      gas: Web3.utils.toHex(21000),
+      nonce: Web3.utils.toHex(nonce),
+
+    };
+  
+    web3.eth.accounts.signTransaction(rawTx, privateKey)
+    .then(function(value){
+        web3.eth.sendSignedTransaction(value.rawTransaction)
+        .then(function(response){
+          console.log("response:" + JSON.stringify(response, null, ' '));
+        })
+      })
+    /*
+    const tx = new Tx(rawTx);
+    tx.sign(privateKeyBuffer);
+    const serializedTx = tx.serialize();
+  
+    console.log(tx.getSenderAddress().toString('hex'))
+  
+    const res = await web3.eth.sendSignedTransaction(`0x${serializedTx.toString('hex')}`);
+    console.log(res)
+    */
+    return res;
+
+
+    /*
     web3.eth.getTransactionCount(account1, (err, txCount) => { 
 
         const txObject = { 
@@ -105,7 +147,7 @@ router.post("/sendTransaction", async (req, res) => {
         })  
 
     })
-
+    */
 
   } catch (err) {
     console.log(err);
