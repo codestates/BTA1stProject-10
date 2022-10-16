@@ -6,12 +6,12 @@ const Bip39 = require('bip39');
 const Hdkey = require('hdkey');
 const ethUtil = require('ethereumjs-util');
 const Web3 = require('web3');
-
+const Tx = require('ethereumjs-tx').Transaction;
 
 const url = 'https://rpc.testnet.fantom.network'  // url string
 const web3 = new Web3(new Web3.providers.HttpProvider(url));
 
-// TODO : lightwallet 모듈을 사용하여 랜덤한 니모닉 코드를 얻습니다.
+// TODO : newWallet : password를 통하여 wallet 생성
 router.post("/newWallet", async (req, res) => {
     const { password } = req.body;
     try {
@@ -19,7 +19,7 @@ router.post("/newWallet", async (req, res) => {
         const mnemonic = Bip39.generateMnemonic();
         console.log(mnemonic);
         const seed = Bip39.mnemonicToSeedSync(mnemonic.toString());
-        console.log(seed);
+        //console.log(seed);
         const root = Hdkey.fromMasterSeed(Buffer.from(seed, 'hex'));
         
         //console.log(root);
@@ -30,7 +30,7 @@ router.post("/newWallet", async (req, res) => {
         console.log(publicAddress);
         const privateKey = ethUtil.bufferToHex(addrNode._privateKey);
         console.log(privateKey);
-        console.log(password);
+        //console.log(password);
         const keystore = web3.eth.accounts.encrypt(privateKey, password.toString());
         //const keystore = Web3.eth.accounts.encrypt('0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318', 'test!');
 
@@ -43,5 +43,106 @@ router.post("/newWallet", async (req, res) => {
 });
 
 
+// TODO : getBalance : Public Address 로 잔고 조회
+router.post("/getBalance", async (req, res) => {
+  const { address } = req.body;
+  try {
+      console.log(address);
+      const balance = await web3.eth.getBalance(address);
+      console.log(balance);
+      return res.json(balance);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+
+// TODO : sendTransaction 
+router.post("/sendTransaction", async (req, res) => {
+  //const { privateKey, fromAddress, toAddress, amount } = req.body;
+  try {
+
+    const privateKey = Buffer.from('04149553b5a07f3668caa788ea4708091b00312b875071a631740a66abd380d9', 'hex');
+
+    const account1 = '0xcc4fa62eba2ad880134c96fa2c1ffc699082a44c';
+
+    const account2 = '0xafc0eb1c10e32d9286321bde09592d7db8e8c6a1';
+
+    const balance1 = await web3.eth.getBalance(account1);
+    console.log(balance1);
+    const balance2 = await web3.eth.getBalance(account2);
+    console.log(balance2); 
+
+
+    const nonce = await web3.eth.getTransactionCount(account1, 'latest'); // nonce starts counting from 0
+    console.log(web3.utils.toHex(nonce));
+
+    const rawTx = {
+      'nonce': web3.utils.toHex(10),  
+      'from': '0xcc4fa62eba2ad880134c96fa2c1ffc699082a44c',
+      'to': '0xafc0eb1c10e32d9286321bde09592d7db8e8c6a1', // faucet address to return eth
+      'value': web3.utils.toHex(web3.utils.toWei('10000', 'wei')),
+      'gas': web3.utils.toHex(2),
+      'gasPrice': web3.utils.toHex(web3.utils.toWei('3', 'wei')),
+      'gasLimit': web3.utils.toHex(21000)
+    };
+    
+    console.log(rawTx);
+
+    
+    const signedTx = await web3.eth.sendSignedTransaction(rawTx, privateKey);
+
+    web3.eth.sendSignedTransaction(signedTx.rawTransaction, function(error, hash) {
+      if (!error) {
+        console.log("🎉 The hash of your transaction is: ", hash, "\n send your transaction!");
+      } else {
+        console.log("❗Something went wrong while submitting your transaction:", error)
+      }
+     });
+
+/*
+    web3.eth.getTransactionCount(account1, (err, txCount) => { 
+
+        const txObject = { 
+        
+        nonce: web3.utils.toHex(txCount), 
+        
+        to: account2, 
+        
+        value: web3.utils.toHex(web3.utils.toWei('100000', 'wei')), 
+        
+        gasLimit: web3.utils.toHex(21000), 
+        
+        gasPrice: web3.utils.toHex(web3.utils.toWei('3', 'wei')) 
+        
+        }; 
+
+
+
+        console.log(txObject);
+
+        const tx = new Tx(txObject);
+        
+        tx.sign(privateKey);
+
+        const serializedTx = tx.serialize();
+
+        const raw = '0x' + serializedTx.toString('hex'); 
+        
+        console.log(raw);
+        
+
+        web3.eth.sendSignedTransaction(raw, (err, txHash) => { 
+
+        console.log('txHash:', txHash); 
+        })  
+
+    })
+*/
+
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 module.exports = router;
