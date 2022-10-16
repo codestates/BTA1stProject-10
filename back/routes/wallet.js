@@ -62,45 +62,12 @@ router.post("/sendTransaction", async (req, res) => {
   //const { privateKey, fromAddress, toAddress, amount } = req.body;
   try {
 
-    const privateKey = Buffer.from('04149553b5a07f3668caa788ea4708091b00312b875071a631740a66abd380d9', 'hex');
+    const privateKey = Buffer.from('7d0c8ef98351641b54de0c0729019c4ab6d04478bb2288701d77bcc4342c42b6', 'hex');
 
-    const account1 = '0xcc4fa62eba2ad880134c96fa2c1ffc699082a44c';
+    const account1 = '0x42cd61efEb226A4bc7Ac449CF9af5Bf85634e432';
 
     const account2 = '0xafc0eb1c10e32d9286321bde09592d7db8e8c6a1';
 
-    const balance1 = await web3.eth.getBalance(account1);
-    console.log(balance1);
-    const balance2 = await web3.eth.getBalance(account2);
-    console.log(balance2); 
-
-
-    const nonce = await web3.eth.getTransactionCount(account1, 'latest'); // nonce starts counting from 0
-    console.log(web3.utils.toHex(nonce));
-
-    const rawTx = {
-      'nonce': web3.utils.toHex(10),  
-      'from': '0xcc4fa62eba2ad880134c96fa2c1ffc699082a44c',
-      'to': '0xafc0eb1c10e32d9286321bde09592d7db8e8c6a1', // faucet address to return eth
-      'value': web3.utils.toHex(web3.utils.toWei('10000', 'wei')),
-      'gas': web3.utils.toHex(2),
-      'gasPrice': web3.utils.toHex(web3.utils.toWei('3', 'wei')),
-      'gasLimit': web3.utils.toHex(21000)
-    };
-    
-    console.log(rawTx);
-
-    
-    const signedTx = await web3.eth.sendSignedTransaction(rawTx, privateKey);
-
-    web3.eth.sendSignedTransaction(signedTx.rawTransaction, function(error, hash) {
-      if (!error) {
-        console.log("🎉 The hash of your transaction is: ", hash, "\n send your transaction!");
-      } else {
-        console.log("❗Something went wrong while submitting your transaction:", error)
-      }
-     });
-
-/*
     web3.eth.getTransactionCount(account1, (err, txCount) => { 
 
         const txObject = { 
@@ -113,8 +80,8 @@ router.post("/sendTransaction", async (req, res) => {
         
         gasLimit: web3.utils.toHex(21000), 
         
-        gasPrice: web3.utils.toHex(web3.utils.toWei('3', 'wei')) 
-        
+        gasPrice: web3.utils.toHex(web3.utils.toWei('3', 'wei')),
+        chainID: '4002' 
         }; 
 
 
@@ -127,9 +94,9 @@ router.post("/sendTransaction", async (req, res) => {
 
         const serializedTx = tx.serialize();
 
-        const raw = '0x' + serializedTx.toString('hex'); 
-        
-        console.log(raw);
+       //const raw = '0x' + serializedTx.toString('hex'); 
+       const raw = serializedTx.toString('hex'); 
+       console.log(raw);
         
 
         web3.eth.sendSignedTransaction(raw, (err, txHash) => { 
@@ -138,7 +105,7 @@ router.post("/sendTransaction", async (req, res) => {
         })  
 
     })
-*/
+
 
   } catch (err) {
     console.log(err);
